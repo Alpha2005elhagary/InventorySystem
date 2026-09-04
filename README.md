@@ -1,4 +1,4 @@
-# 📦 Inventory Management System (ASP.NET Core MVC)
+# 📦 Inventory Management System (ASP.NET Core MVC).
 
 Architecture skeleton for an **Inventory Management System** built with **ASP.NET Core MVC** and **Entity Framework Core**.
 
