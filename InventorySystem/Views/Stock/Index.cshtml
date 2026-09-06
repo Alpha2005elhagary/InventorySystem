@@ -1,0 +1,124 @@
+@model IEnumerable<InventorySystem.Models.StockTransaction>
+
+@{
+    ViewData["Title"] = "Stock Movement Ledger";
+    var products = ViewBag.Products as SelectList;
+    var currentType = ViewBag.Type as string;
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">📋 Stock Movement Ledger</h3>
+            <p class="text-muted small mb-0">Complete historical audit trail of all warehouse incoming and outgoing goods.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="StockIn" class="btn btn-success d-flex align-items-center gap-1">
+                <i class="ti ti-plus"></i> Record Stock In
+            </a>
+            <a asp-action="StockOut" class="btn btn-danger d-flex align-items-center gap-1">
+                <i class="ti ti-minus"></i> Record Stock Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-5">
+                    <select name="productId" asp-items="products" class="form-select">
+                        <option value="">-- Filter by Product --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select name="type" class="form-select">
+                        <option value="">-- All Types (In / Out) --</option>
+                        <option value="Stock In" selected="@(currentType == "Stock In")">Stock In (+)</option>
+                        <option value="Stock Out" selected="@(currentType == "Stock Out")">Stock Out (-)</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-dark btn-sm px-3">Filter</button>
+                    @if (!string.IsNullOrEmpty(currentType) || products?.SelectedValue != null)
+                    {
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-sm" title="Clear Filters"><i class="ti ti-x"></i></a>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ledger Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>#ID</th>
+                            <th>Timestamp</th>
+                            <th>Product Name</th>
+                            <th>Movement Type</th>
+                            <th>Quantity</th>
+                            <th>Notes / Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            @foreach (var tx in Model)
+                            {
+                                <tr>
+                                    <td class="text-muted font-monospace small">#@tx.Id</td>
+                                    <td class="text-muted small">@tx.Date.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</td>
+                                    <td>
+                                        <a asp-controller="Products" asp-action="Details" asp-route-id="@tx.ProductId" class="fw-semibold text-dark text-decoration-none">
+                                            @tx.Product?.Name
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @if (tx.Type == "Stock In")
+                                        {
+                                            <span class="badge bg-success-subtle text-success fw-semibold">
+                                                <i class="ti ti-arrow-down-left me-1"></i> Stock In
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger fw-semibold">
+                                                <i class="ti ti-arrow-up-right me-1"></i> Stock Out
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (tx.Type == "Stock In")
+                                        {
+                                            <span class="text-success fw-bold fs-6">+@tx.Quantity</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger fw-bold fs-6">-@tx.Quantity</span>
+                                        }
+                                    </td>
+                                    <td class="text-muted small">
+                                        @(string.IsNullOrEmpty(tx.Notes) ? "-" : tx.Notes)
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="ti ti-arrows-exchange fs-1 d-block mb-2 opacity-50"></i>
+                                    No stock movement records found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
