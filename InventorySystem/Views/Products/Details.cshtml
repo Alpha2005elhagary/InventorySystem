@@ -1,0 +1,122 @@
+@model InventorySystem.Models.Product
+
+@{
+    ViewData["Title"] = Model.Name + " - Details";
+}
+
+<div class="container py-2" style="max-width: 900px;">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <a asp-action="Index" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1 mb-2">
+                <i class="ti ti-arrow-left"></i> Back to Products List
+            </a>
+            <h3 class="fw-bold mb-1">@Model.Name</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                <i class="ti ti-edit"></i> Edit
+            </a>
+            <a asp-controller="Stock" asp-action="StockIn" asp-route-productId="@Model.Id" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                <i class="ti ti-plus"></i> Stock In
+            </a>
+            <a asp-controller="Stock" asp-action="StockOut" asp-route-productId="@Model.Id" class="btn btn-danger btn-sm d-flex align-items-center gap-1">
+                <i class="ti ti-minus"></i> Stock Out
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <!-- Main details card -->
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Product Overview</h5>
+                    <p class="text-muted">@(Model.Description ?? "No description provided.")</p>
+
+                    <dl class="row mb-0 small">
+                        <dt class="col-sm-4 text-muted">Category</dt>
+                        <dd class="col-sm-8"><span class="badge bg-secondary-subtle text-secondary">@(Model.Category?.Name ?? "General")</span></dd>
+
+                        <dt class="col-sm-4 text-muted">Supplier</dt>
+                        <dd class="col-sm-8">@(Model.Supplier?.Name ?? "None")</dd>
+
+                        <dt class="col-sm-4 text-muted">Unit Price</dt>
+                        <dd class="col-sm-8 fw-bold fs-6 text-dark">@Model.Price.ToString("C2")</dd>
+
+                        <dt class="col-sm-4 text-muted">Min Threshold</dt>
+                        <dd class="col-sm-8 text-muted">@Model.MinStock units</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock level gauge card -->
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm h-100 text-center">
+                <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center">
+                    <span class="text-muted text-uppercase small fw-semibold">Current Stock Level</span>
+                    <h1 class="display-3 fw-bold my-2 @(Model.IsOutOfStock ? "text-danger" : Model.IsLowStock ? "text-warning" : "text-success")">
+                        @Model.Quantity
+                    </h1>
+                    <span class="badge @(Model.IsOutOfStock ? "bg-danger-subtle text-danger" : Model.IsLowStock ? "bg-warning-subtle text-warning" : "bg-success-subtle text-success") px-3 py-2">
+                        @(Model.IsOutOfStock ? "Out of Stock" : Model.IsLowStock ? "Low Stock Alert" : "In Stock & Healthy")
+                    </span>
+                    <small class="text-muted mt-2">Total inventory value: @((Model.Price * Model.Quantity).ToString("C2"))</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movement history for this product -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 pt-3 pb-2">
+            <h5 class="fw-bold mb-0">Movement History</h5>
+            <small class="text-muted">Audit log for this item</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Units</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.StockTransactions.Any())
+                        {
+                            @foreach (var tx in Model.StockTransactions)
+                            {
+                                <tr>
+                                    <td class="text-muted small">@tx.Date.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</td>
+                                    <td>
+                                        @if (tx.Type == "Stock In")
+                                        {
+                                            <span class="badge bg-success-subtle text-success"><i class="ti ti-arrow-down-left"></i> In</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger"><i class="ti ti-arrow-up-right"></i> Out</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold @(tx.Type == "Stock In" ? "text-success" : "text-danger")">
+                                        @(tx.Type == "Stock In" ? "+" : "-")@tx.Quantity
+                                    </td>
+                                    <td class="text-muted small">@(string.IsNullOrEmpty(tx.Notes) ? "-" : tx.Notes)</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No transactions recorded for this item.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
