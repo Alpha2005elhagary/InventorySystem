@@ -1,0 +1,73 @@
+@model InventorySystem.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register Account";
+}
+
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="text-center mb-4">
+            <span class="btn-icon btn-md bg-primary text-white rounded-4 mb-2">
+                <i class="ti ti-user-plus fs-4"></i>
+            </span>
+            <h4 class="fw-bold">Create Account</h4>
+            <p class="text-muted small">Register a new operator or staff member</p>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    
+                    <div asp-validation-summary="All" class="alert alert-danger border-0 small py-2 mb-3" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label small fw-semibold"></label>
+                        <input asp-for="FullName" class="form-control" placeholder="e.g. John Smith" autofocus required />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label small fw-semibold"></label>
+                        <input asp-for="Email" class="form-control" placeholder="john@company.com" required />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label small fw-semibold"></label>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="At least 6 chars" required />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label small fw-semibold"></label>
+                            <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Repeat password" required />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Role" class="form-label small fw-semibold"></label>
+                        <select asp-for="Role" class="form-select">
+                            <option value="Employee">Employee (Staff)</option>
+                            <option value="Admin">Admin (Full Access)</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Complete Registration</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="text-center mt-3 text-muted small">
+            Already have an account? <a asp-action="Login" asp-route-returnUrl="@Model?.ReturnUrl" class="text-primary fw-semibold">Sign In</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

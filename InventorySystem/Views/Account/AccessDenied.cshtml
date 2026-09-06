@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="row justify-content-center py-5 text-center">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4">
+            <div class="card-body">
+                <span class="btn-icon btn-lg bg-danger-subtle text-danger rounded-circle mb-3 fs-2">
+                    <i class="ti ti-lock"></i>
+                </span>
+                <h3 class="fw-bold text-danger">Access Denied</h3>
+                <p class="text-muted">You do not have permission to view or manage this section.</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary px-4 mt-2">
+                    Return to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
