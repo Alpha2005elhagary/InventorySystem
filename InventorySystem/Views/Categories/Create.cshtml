@@ -1,0 +1,41 @@
+@model InventorySystem.Models.Category
+
+@{
+    ViewData["Title"] = "Add Category";
+}
+
+<div class="container py-2" style="max-width: 600px;">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1 mb-2">
+            <i class="ti ti-arrow-left"></i> Back to Categories
+        </a>
+        <h3 class="fw-bold mb-1">Create Category</h3>
+        <p class="text-muted small">Add a new category classification for your products.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 small py-2"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-semibold small">Category Name <span class="text-danger">*</span></label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. Smart Watches" required />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label fw-semibold small">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Category purpose or scope..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4">Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

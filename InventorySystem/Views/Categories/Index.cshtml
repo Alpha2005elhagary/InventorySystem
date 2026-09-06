@@ -1,0 +1,54 @@
+@model IEnumerable<InventorySystem.Models.Category>
+
+@{
+    ViewData["Title"] = "Product Categories";
+}
+
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">🏷️ Categories</h3>
+            <p class="text-muted small mb-0">Organize and group products into product families.</p>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="ti ti-plus"></i> Add New Category
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        @foreach (var cat in Model)
+        {
+            <div class="col-md-6 col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold mb-0 text-dark">@cat.Name</h5>
+                                <span class="badge bg-primary-subtle text-primary">@cat.Products.Count products</span>
+                            </div>
+                            <p class="text-muted small">@(cat.Description ?? "No description provided.")</p>
+                        </div>
+
+                        <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                            <a asp-controller="Products" asp-action="Index" asp-route-categoryId="@cat.Id" class="btn btn-sm btn-outline-secondary">
+                                View Items <i class="ti ti-arrow-narrow-right"></i>
+                            </a>
+
+                            @if (!cat.Products.Any())
+                            {
+                                <form asp-action="Delete" asp-route-id="@cat.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this category?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Category">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
