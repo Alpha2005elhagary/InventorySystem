@@ -1,0 +1,279 @@
+@model InventorySystem.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Inventory Dashboard";
+}
+
+<div class="container-fluid p-0">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">📦 Inventory Dashboard</h3>
+            <p class="text-muted small mb-0">Overview of warehouse stock levels, transactions, and performance metrics.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a asp-controller="Stock" asp-action="StockIn" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                <i class="ti ti-arrow-bar-to-down"></i> Stock In
+            </a>
+            <a asp-controller="Stock" asp-action="StockOut" class="btn btn-danger btn-sm d-flex align-items-center gap-1">
+                <i class="ti ti-arrow-bar-to-up"></i> Stock Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Metric KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Total Products</span>
+                        <h2 class="fw-bold mb-0 mt-1">@Model.TotalProducts</h2>
+                        <span class="text-success small"><i class="ti ti-arrow-up-right"></i> Active catalog</span>
+                    </div>
+                    <div class="icon-shape bg-primary-subtle text-primary rounded-4 p-3 fs-3">
+                        <i class="ti ti-box"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Total Stock Units</span>
+                        <h2 class="fw-bold mb-0 mt-1">@Model.TotalStock.ToString("N0")</h2>
+                        <span class="text-muted small">Valuation: @Model.TotalInventoryValue.ToString("C0")</span>
+                    </div>
+                    <div class="icon-shape bg-success-subtle text-success rounded-4 p-3 fs-3">
+                        <i class="ti ti-packages"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Categories / Suppliers</span>
+                        <h2 class="fw-bold mb-0 mt-1">@Model.TotalCategories <span class="fs-6 text-muted">/ @Model.TotalSuppliers</span></h2>
+                        <span class="text-muted small">Managed categories</span>
+                    </div>
+                    <div class="icon-shape bg-info-subtle text-info rounded-4 p-3 fs-3">
+                        <i class="ti ti-category"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 @(Model.LowStockCount > 0 ? "border-start border-4 border-warning" : "")">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Low Stock Alerts</span>
+                        <h2 class="fw-bold mb-0 mt-1 text-warning">@Model.LowStockCount</h2>
+                        <a asp-controller="Products" asp-action="Index" asp-route-lowStock="true" class="text-warning small text-decoration-none fw-semibold">
+                            Review items <i class="ti ti-arrow-narrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="icon-shape bg-warning-subtle text-warning rounded-4 p-3 fs-3">
+                        <i class="ti ti-alert-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-3 mb-4">
+        <!-- Main Area Chart: Sales Overview -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-0">Inventory & Sales Flow</h5>
+                        <small class="text-muted">Turnover and demand comparison</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button id="btn-update" class="btn btn-sm btn-outline-secondary">Show Comparison</button>
+                        <button id="btn-random" class="btn btn-sm btn-outline-primary">Randomize</button>
+                    </div>
+                </div>
+                <div class="card-body pt-2">
+                    <div id="salesChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Radial Chart & Distribution -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                    <h5 class="fw-bold mb-0">Stock Fulfillment</h5>
+                    <small class="text-muted">First-time vs repeat movements</small>
+                </div>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <div id="customerChart" style="min-height: 220px; width: 100%;"></div>
+                    <div class="w-100 mt-3 pt-3 border-top d-flex justify-content-around text-center">
+                        <div>
+                            <span class="text-muted small">Out of Stock</span>
+                            <h4 class="fw-bold text-danger mb-0">@Model.OutOfStockCount</h4>
+                        </div>
+                        <div class="vr"></div>
+                        <div>
+                            <span class="text-muted small">Low Stock</span>
+                            <h4 class="fw-bold text-warning mb-0">@Model.LowStockCount</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales vs Purchase Bar Chart & Tables Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                    <h5 class="fw-bold mb-0">Stock In vs Stock Out Activity</h5>
+                    <small class="text-muted">Weekly replenishment and dispatch trends</small>
+                </div>
+                <div class="card-body">
+                    <div id="salesPurchaseChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Items Alert Table -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning-subtle text-warning p-2 rounded-circle">
+                            <i class="ti ti-alert-triangle fs-6"></i>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-0">Low Stock Warnings</h5>
+                            <small class="text-muted">Items below reorder minimum</small>
+                        </div>
+                    </div>
+                    <a asp-controller="Products" asp-action="Index" asp-route-lowStock="true" class="btn btn-sm btn-link text-primary fw-semibold p-0">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Remaining</th>
+                                    <th>Min Level</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.LowStockProducts.Any())
+                                {
+                                    @foreach (var item in Model.LowStockProducts)
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold text-dark">@item.Name</td>
+                                            <td><span class="badge bg-light text-dark border">@item.Category?.Name</span></td>
+                                            <td><span class="badge bg-warning text-dark fw-bold">@item.Quantity</span></td>
+                                            <td class="text-muted">@item.MinStock</td>
+                                            <td class="text-end">
+                                                <a asp-controller="Stock" asp-action="StockIn" asp-route-productId="@item.Id" class="btn btn-sm btn-outline-success py-1 px-2">
+                                                    + Restock
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            <i class="ti ti-circle-check text-success fs-4 d-block mb-1"></i>
+                                            All inventory levels are currently sufficient!
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions Ledger Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Recent Stock Movements</h5>
+                <small class="text-muted">Live audit trail of stock ins and outs</small>
+            </div>
+            <a asp-controller="Stock" asp-action="Index" class="btn btn-sm btn-outline-secondary">View Full Ledger</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Time</th>
+                            <th>Product</th>
+                            <th>Type</th>
+                            <th>Units Moved</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentTransactions.Any())
+                        {
+                            @foreach (var tx in Model.RecentTransactions)
+                            {
+                                <tr>
+                                    <td class="text-muted small">@tx.Date.ToLocalTime().ToString("MMM dd, HH:mm")</td>
+                                    <td class="fw-semibold">@tx.Product?.Name</td>
+                                    <td>
+                                        @if (tx.Type == "Stock In")
+                                        {
+                                            <span class="badge bg-success-subtle text-success fw-semibold">
+                                                <i class="ti ti-arrow-down-left me-1"></i> Stock In
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger fw-semibold">
+                                                <i class="ti ti-arrow-up-right me-1"></i> Stock Out
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (tx.Type == "Stock In")
+                                        {
+                                            <span class="text-success fw-bold">+@tx.Quantity</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger fw-bold">-@tx.Quantity</span>
+                                        }
+                                    </td>
+                                    <td class="text-muted small">@(string.IsNullOrEmpty(tx.Notes) ? "-" : tx.Notes)</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No stock movements recorded yet.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
